@@ -1,0 +1,48 @@
+﻿<Properties StartupConfiguration="{FE3C5FD6-FB5E-430C-ABE0-381B6647537B}|Default">
+  <MonoDevelop.Ide.ItemProperties.KeyotBotCoreApp PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="KeyotBotCoreApp/Context/Entities/Candidate.cs">
+    <Files>
+      <File FileName="KeyotBotCoreApp/Services/Models/SeniorCandidateModel.cs" Line="85" Column="1" />
+      <File FileName="KeyotBotCoreApp/Services/WatsonAssistantService.cs" Line="84" Column="10" />
+      <File FileName="KeyotBotCoreApp/Context/Entities/Candidate.cs" Line="13" Column="43" />
+      <File FileName="KeyotBotCoreApp/Context/Entities/SeniorCandidate.cs" Line="8" Column="33" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="KeyotBotCoreApp" expanded="True">
+            <Node name="KeyotBotCoreApp" expanded="True">
+              <Node name="Context" expanded="True">
+                <Node name="Entities" expanded="True">
+                  <Node name="Candidate.cs" selected="True" />
+                </Node>
+              </Node>
+              <Node name="Controllers" expanded="True" />
+              <Node name="Models" expanded="True" />
+              <Node name="Properties" expanded="True" />
+              <Node name="Services" expanded="True">
+                <Node name="Assistants" expanded="True" />
+                <Node name="Models" expanded="True" />
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+      <Pad Id="MonoDevelop.Debugger.WatchPad">
+        <State>
+          <Value>candidates as List&lt;SeniorCandidate&gt;</Value>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore>
+      <Breakpoint file="/Users/andrewdaniels/Desktop/KeyotBotApp/KeyotBotCoreApp/Services/Models/SeniorCandidateModel.cs" relfile="KeyotBotCoreApp/Services/Models/SeniorCandidateModel.cs" line="35" column="1" />
+      <Breakpoint file="/Users/andrewdaniels/Desktop/KeyotBotApp/KeyotBotCoreApp/Services/Models/SeniorCandidateModel.cs" relfile="KeyotBotCoreApp/Services/Models/SeniorCandidateModel.cs" line="38" column="1" />
+      <Breakpoint file="/Users/andrewdaniels/Desktop/KeyotBotApp/KeyotBotCoreApp/Services/Models/SeniorCandidateModel.cs" relfile="KeyotBotCoreApp/Services/Models/SeniorCandidateModel.cs" line="84" column="1" />
+    </BreakpointStore>
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MultiItemStartupConfigurations />
+</Properties>

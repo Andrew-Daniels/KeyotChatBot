@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+
 namespace KeyotBotCoreApp.Services
 {
     public interface ICandidateAssistant

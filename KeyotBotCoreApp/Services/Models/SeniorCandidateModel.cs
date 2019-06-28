@@ -2,29 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using IBM.Watson.Assistant.v1.Model;
+using KeyotBotCoreApp.Context;
+using KeyotBotCoreApp.Context.Entities;
 
 namespace KeyotBotCoreApp.Services
 {
-    public class CandidateModel
+    public class SeniorCandidateModel: BaseCandidateModel
     {
-        public string ConversationId { get; set; }
-        public List<Log> ConversationLog { get; set; }
-        public string ConversationLogString { get; set; }
-
         public string Email { get; set; }
-        public string Name { get; set; }
         public string FutureMeetTime { get; set; }
         public string Interested { get; set; }
         public string Phone { get; set; }
         public string PreferredContactMethod { get; set; }
         public string Roles { get; set; }
 
-        public CandidateModel()
+        public SeniorCandidateModel(): base()
         {
-            ConversationLog = new List<Log>();
         }
 
-        public void BuildModel()
+        override public void BuildModel()
         {
             try 
             {
@@ -33,6 +29,10 @@ namespace KeyotBotCoreApp.Services
                 if (ConversationLog.Count > 2)
                 {
                     Name = ConversationLog[3].Request.Input.Text;
+                }
+                else 
+                {
+                    return;
                 }
 
                 for (int i = 0; i < ConversationLog.Count; i++)
@@ -77,6 +77,16 @@ namespace KeyotBotCoreApp.Services
             {
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        override public void Save<T>(CandidateContext context, List<T> candidates)
+        {
+            context.SeniorCandidates.AddRange(candidates as List<SeniorCandidate>);
+        }
+
+        override public bool CheckIfCandidateExists(CandidateContext context)
+        {
+            return context.SeniorCandidates.Where(s => s.CandidateId == ConversationId).FirstOrDefault() != null;
         }
     }
 }

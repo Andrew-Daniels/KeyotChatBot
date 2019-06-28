@@ -12,20 +12,17 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace KeyotBotCoreApp.Services
 {
-    public class WatsonAssistantService
+    public class WatsonAssistantService<T, R, V> where T: ICandidateAssistant, new() where R: BaseCandidateModel, new()
     {
-        string apikey = "XcnidYn9tQOMdadWG36fBHJBF6S9OFQiXLWJtjob1xN-";
-        string url = "https://gateway.watsonplatform.net/assistant/api";
-        string versionDate = "2019-06-27";
-        string workspaceId = "fcaefbc7-bbe1-418d-9a65-18a5314ac553";
-        string username = "apikey";
-        string password = "XcnidYn9tQOMdadWG36fBHJBF6S9OFQiXLWJtjob1xN-";
-
         private readonly CandidateContext _context;
         private IMapper _mapper;
+        private T _candidateAssistant;
+        private List<R> _model;
 
         public WatsonAssistantService()
         {
+            _model = new List<R>();
+            _candidateAssistant = new T();
             var optionsBuilder = new DbContextOptionsBuilder<CandidateContext>();
             optionsBuilder.UseMySQL("Server=remotemysql.com;Database=sAzFragJ80;Uid=sAzFragJ80;Pwd=Ye5x0LBDEk;");
             _context = new CandidateContext(optionsBuilder.Options);
@@ -35,11 +32,10 @@ namespace KeyotBotCoreApp.Services
         #region Sessions
         public void StartSession()
         {
-            var service = new AssistantService(username, password, versionDate);
-            service.SetEndpoint(url);
-            service.ApiKey = apikey;
-            var response = service.ListLogs(workspaceId, "-request_timestamp");
-            //var response = service.ListAllLogs("language::en,request.context.metadata.deployment::Development");
+            var service = new AssistantService(_candidateAssistant.username, _candidateAssistant.password, _candidateAssistant.versionDate);
+            service.SetEndpoint(_candidateAssistant.url);
+            service.ApiKey = _candidateAssistant.apikey;
+            var response = service.ListLogs(_candidateAssistant.workspaceId, "-request_timestamp");
             CreateConversationModelListFromResponse(response);
         }
 
@@ -47,12 +43,12 @@ namespace KeyotBotCoreApp.Services
         {
             var configuration = new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<CandidateModel, Conversation>()
+                cfg.CreateMap<SeniorCandidateModel, Conversation>()
                     .ForMember(c => c.Date, opt => opt.MapFrom(src => DateTime.Parse(src.ConversationLog.FirstOrDefault().RequestTimestamp)))
                     .ForMember(c => c.ChatLog, opt => opt.MapFrom(src => src.ConversationLogString ?? ""))
                     .ForMember(c => c.Guid, opt => opt.MapFrom(src => src.ConversationId))
                     .ForMember(c => c.Score, opt => opt.Ignore());
-                cfg.CreateMap<CandidateModel, SeniorCandidate>()
+                cfg.CreateMap<SeniorCandidateModel, SeniorCandidate>()
                     .ForMember(c => c.CandidateId, opt => opt.MapFrom(src => src.ConversationId));
             });
             // only during development, validate your mappings; remove it before release
@@ -62,8 +58,6 @@ namespace KeyotBotCoreApp.Services
 
         private void CreateConversationModelListFromResponse(IBM.Cloud.SDK.Core.Http.DetailedResponse<LogCollection> response)
         {
-            List<CandidateModel> retVal = new List<CandidateModel>();
-
             using (_context)
             {
                 foreach (var log in response.Result.Logs)
@@ -79,21 +73,21 @@ namespace KeyotBotCoreApp.Services
                         continue;
                     }
 
-                    ExtractCandidateAndConversationFromResponse(retVal, log, conversationId);
+                    ExtractCandidateAndConversationFromResponse(log, conversationId);
                 }
 
-                if (retVal.Count > 0)
+                if (_model.Count > 0)
                 {
-                    SaveConversations(retVal);
+                    SaveCandidatesAndConversations();
                 }
             }
         }
 
-        private void ExtractCandidateAndConversationFromResponse(List<CandidateModel> retVal, Log log, string conversationId)
+        private void ExtractCandidateAndConversationFromResponse(Log log, string conversationId)
         {
-            if (retVal.Count > 0)
+            if (_model.Count > 0)
             {
-                var match = retVal.FirstOrDefault(m => m.ConversationId.Equals(conversationId));
+                var match = _model.FirstOrDefault(m => m.ConversationId.Equals(conversationId));
                 if (match != null)
                 {
                     match.ConversationLog.Add(log);
@@ -101,47 +95,46 @@ namespace KeyotBotCoreApp.Services
                 }
                 else
                 {
-                    AddLogToConversationModelList(retVal, log, conversationId);
+                    AddLogToConversationModelList(log, conversationId);
                 }
             }
             else
             {
-                AddLogToConversationModelList(retVal, log, conversationId);
+                AddLogToConversationModelList(log, conversationId);
             }
         }
 
-        private void SaveConversations(List<CandidateModel> retVal)
+        private void SaveCandidatesAndConversations()
         {
             List<Conversation> conversations = new List<Conversation>();
-            List<SeniorCandidate> seniors = new List<SeniorCandidate>();
+            List<V> candidates = new List<V>();
 
-            foreach (var model in retVal)
+            foreach (var model in _model)
             {
                 model.BuildModel();
                 var conv = _mapper.Map<Conversation>(model);
-                var senior = _mapper.Map<SeniorCandidate>(model);
-
-                var candidateExists = _context.SeniorCandidates.Where(s => s.CandidateId == senior.CandidateId).FirstOrDefault() != null;
+                var candidate = _mapper.Map<V>(model);
 
                 if (!String.IsNullOrWhiteSpace(conv.ChatLog))
                     conversations.Add(conv);
 
-                if (!candidateExists && !String.IsNullOrWhiteSpace(senior.Name))
-                    seniors.Add(senior);
+                if (model.CheckIfCandidateExists(_context) && !String.IsNullOrWhiteSpace(model.Name))
+                    candidates.Add(candidate);
+                    
             }
             _context.Conversations.AddRange(conversations);
-            _context.SeniorCandidates.AddRange(seniors);
+            _model.FirstOrDefault().Save<V>(_context, candidates);
             _context.SaveChanges();
         }
 
-        private void AddLogToConversationModelList(List<CandidateModel> model, Log log, string conversationId)
+        private void AddLogToConversationModelList(Log log, string conversationId)
         {
-            var conv = new CandidateModel()
+            var conv = new R()
             {
                 ConversationId = conversationId,
                 ConversationLog = new List<Log>() { log }
             };
-            model.Add(conv);
+            _model.Add(conv);
         }
         #endregion
     }

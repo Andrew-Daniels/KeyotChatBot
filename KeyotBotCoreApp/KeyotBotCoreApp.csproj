@@ -25,6 +25,8 @@
     <Folder Include="Services\" />
     <Folder Include="Context\" />
     <Folder Include="Context\Entities\" />
+    <Folder Include="Services\Models\" />
+    <Folder Include="Services\Assistants\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Context\IDatabaseContext.cs" />
@@ -32,5 +34,6 @@
     <Compile Remove="Services\EmptyInterface.cs" />
     <Compile Remove="Context\IConversationContext.cs" />
     <Compile Remove="Services\IWatsonAssistantService.cs" />
+    <Compile Remove="Context\Entities\BaseCandidate.cs" />
   </ItemGroup>
 </Project>

@@ -36,7 +36,7 @@ namespace KeyotBotCoreApp
             {
                 try
                 {
-                    WatsonAssistantService service = new WatsonAssistantService();
+                    WatsonAssistantService<SeniorCandidateAssistant, SeniorCandidateModel, SeniorCandidate> service = new WatsonAssistantService<SeniorCandidateAssistant, SeniorCandidateModel, SeniorCandidate>();
                     service.StartSession();
                 }
                 catch (Exception ex)

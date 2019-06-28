@@ -13237,11 +13237,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/andrewdaniels/Projects/KeyotBotCoreApp/KeyotBotCoreApp/KeyotBotCoreApp.csproj",
+      "projectUniqueName": "/Users/andrewdaniels/Desktop/KeyotBotApp/KeyotBotCoreApp/KeyotBotCoreApp.csproj",
       "projectName": "KeyotBotCoreApp",
-      "projectPath": "/Users/andrewdaniels/Projects/KeyotBotCoreApp/KeyotBotCoreApp/KeyotBotCoreApp.csproj",
+      "projectPath": "/Users/andrewdaniels/Desktop/KeyotBotApp/KeyotBotCoreApp/KeyotBotCoreApp.csproj",
       "packagesPath": "/Users/andrewdaniels/.nuget/packages/",
-      "outputPath": "/Users/andrewdaniels/Projects/KeyotBotCoreApp/KeyotBotCoreApp/obj/",
+      "outputPath": "/Users/andrewdaniels/Desktop/KeyotBotApp/KeyotBotCoreApp/obj/",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "/usr/local/share/dotnet/sdk/NuGetFallbackFolder"
