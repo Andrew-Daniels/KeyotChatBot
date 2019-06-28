@@ -7,43 +7,75 @@ namespace KeyotBotCoreApp.Services
 {
     public class CandidateModel
     {
-        public int CandidateId { get; set; }
         public string ConversationId { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Email { get; set; }
         public List<Log> ConversationLog { get; set; }
         public string ConversationLogString { get; set; }
+
+        public string Email { get; set; }
+        public string Name { get; set; }
+        public string FutureMeetTime { get; set; }
+        public string Interested { get; set; }
+        public string Phone { get; set; }
+        public string PreferredContactMethod { get; set; }
+        public string Roles { get; set; }
 
         public CandidateModel()
         {
             ConversationLog = new List<Log>();
         }
 
-        public void BuildConversationString()
+        public void BuildModel()
         {
-            ConversationLog = ConversationLog.OrderBy(c => c.ResponseTimestamp).ToList();
-
-            for (int i = 0; i < ConversationLog.Count; i ++)
+            try 
             {
-                var input = ConversationLog[i].Request.Input.Text;
-                var output = ConversationLog[i].Response.Output.Text.FirstOrDefault();
+                ConversationLog = ConversationLog.OrderBy(c => c.ResponseTimestamp).ToList();
 
-                switch (i)
+                if (ConversationLog.Count > 2)
                 {
-                    case 0:
-                        FirstName = input;
-                        break;
-                    case 1:
-                        LastName = input;
-                        break;
-                    case 2:
-                        Email = input;
-                        break;
-                    default:
-                        ConversationLogString += String.Format("Bot says:\n\r\t{0}\n\r{1} says:\n\r\t{2}\n\r", output, FirstName, input);
-                        break;
+                    Name = ConversationLog[3].Request.Input.Text;
                 }
+
+                for (int i = 0; i < ConversationLog.Count; i++)
+                {
+                    var input = "";
+                    if (ConversationLog.Count > i)
+                    {
+                        input = ConversationLog[i + 1].Request.Input.Text;
+                    }
+                    var outputs = ConversationLog[i].Response.Output.Text;
+
+                    switch (i)
+                    {
+                        case 0:
+                            Interested = input;
+                            break;
+                        case 1:
+                            Roles = input;
+                            break;
+                        case 3:
+                            Phone = input;
+                            break;
+                        case 4:
+                            Email = input;
+                            break;
+                        case 5:
+                            FutureMeetTime = input;
+                            break;
+                        case 6:
+                            PreferredContactMethod = input;
+                            break;
+                    }
+                    string botSays = "";
+                    foreach (var output in outputs)
+                    {
+                        botSays += String.Format(@"<p>Bot says:</p><p>{0}<p>", output);
+                    }
+                    ConversationLogString += String.Format("{0}<p>{1} says:</p><p>{2}</p>", botSays, Name, input);
+                }
+            } 
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
         }
     }

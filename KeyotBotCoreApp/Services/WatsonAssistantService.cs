@@ -14,18 +14,12 @@ namespace KeyotBotCoreApp.Services
 {
     public class WatsonAssistantService
     {
-        //string apikey = "eDpl4Sza78-8AkByCkAjfUHCmWzeU8SNWNJui2zaidWM";
-        //string url = "https://gateway.watsonplatform.net/assistant/api";
-        //string versionDate = "2019-06-25";
-        //string workspaceId = "97edd9ef-06e4-4bc3-98c5-65ed9046a5ed";
-        //string username = "apikey";
-        //string password = "ejxYN6Ojlb2J3TZIauB0yCyaV-Bm8eYyhpQRhq3GTcG1";
-        string apikey = "KSgEEAC3nnmAKGYOZwZG_OYc0ddA8Fm74kPPI4VX-65l";
-        string url = "https://gateway-wdc.watsonplatform.net/assistant/api";
-        string versionDate = "2019-06-25";
-        string workspaceId = "a8ea7b60-bcfb-4836-8dfe-f120ac495932";
+        string apikey = "XcnidYn9tQOMdadWG36fBHJBF6S9OFQiXLWJtjob1xN-";
+        string url = "https://gateway.watsonplatform.net/assistant/api";
+        string versionDate = "2019-06-27";
+        string workspaceId = "fcaefbc7-bbe1-418d-9a65-18a5314ac553";
         string username = "apikey";
-        string password = "KSgEEAC3nnmAKGYOZwZG_OYc0ddA8Fm74kPPI4VX-65l";
+        string password = "XcnidYn9tQOMdadWG36fBHJBF6S9OFQiXLWJtjob1xN-";
 
         private readonly CandidateContext _context;
         private IMapper _mapper;
@@ -44,8 +38,8 @@ namespace KeyotBotCoreApp.Services
             var service = new AssistantService(username, password, versionDate);
             service.SetEndpoint(url);
             service.ApiKey = apikey;
-            //var response = service.ListLogs(workspaceId);
-            var response = service.ListAllLogs(null);
+            var response = service.ListLogs(workspaceId, "-request_timestamp");
+            //var response = service.ListAllLogs("language::en,request.context.metadata.deployment::Development");
             CreateConversationModelListFromResponse(response);
         }
 
@@ -54,12 +48,12 @@ namespace KeyotBotCoreApp.Services
             var configuration = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<CandidateModel, Conversation>()
-                    .ForMember(c => c.Date, opt => opt.Ignore())
-                    .ForMember(c => c.ChatLog, opt => opt.Ignore())
-                    .ForMember(c => c.Email, opt => opt.Ignore())
-                    .ForMember(c => c.Score, opt => opt.Ignore())
+                    .ForMember(c => c.Date, opt => opt.MapFrom(src => DateTime.Parse(src.ConversationLog.FirstOrDefault().RequestTimestamp)))
+                    .ForMember(c => c.ChatLog, opt => opt.MapFrom(src => src.ConversationLogString ?? ""))
                     .ForMember(c => c.Guid, opt => opt.MapFrom(src => src.ConversationId))
-                    .ForMember(c => c.CandidateId, opt => opt.Ignore());
+                    .ForMember(c => c.Score, opt => opt.Ignore());
+                cfg.CreateMap<CandidateModel, SeniorCandidate>()
+                    .ForMember(c => c.CandidateId, opt => opt.MapFrom(src => src.ConversationId));
             });
             // only during development, validate your mappings; remove it before release
             configuration.AssertConfigurationIsValid();
@@ -103,6 +97,7 @@ namespace KeyotBotCoreApp.Services
                 if (match != null)
                 {
                     match.ConversationLog.Add(log);
+                    match.ConversationLog = match.ConversationLog.OrderBy(m => DateTime.Parse(m.ResponseTimestamp)).ToList();
                 }
                 else
                 {
@@ -118,17 +113,26 @@ namespace KeyotBotCoreApp.Services
         private void SaveConversations(List<CandidateModel> retVal)
         {
             List<Conversation> conversations = new List<Conversation>();
+            List<SeniorCandidate> seniors = new List<SeniorCandidate>();
 
             foreach (var model in retVal)
             {
-                model.BuildConversationString();
+                model.BuildModel();
                 var conv = _mapper.Map<Conversation>(model);
-                conversations.Add(conv);
+                var senior = _mapper.Map<SeniorCandidate>(model);
+
+                var candidateExists = _context.SeniorCandidates.Where(s => s.CandidateId == senior.CandidateId).FirstOrDefault() != null;
+
+                if (!String.IsNullOrWhiteSpace(conv.ChatLog))
+                    conversations.Add(conv);
+
+                if (!candidateExists && !String.IsNullOrWhiteSpace(senior.Name))
+                    seniors.Add(senior);
             }
             _context.Conversations.AddRange(conversations);
+            _context.SeniorCandidates.AddRange(seniors);
             _context.SaveChanges();
         }
-
 
         private void AddLogToConversationModelList(List<CandidateModel> model, Log log, string conversationId)
         {

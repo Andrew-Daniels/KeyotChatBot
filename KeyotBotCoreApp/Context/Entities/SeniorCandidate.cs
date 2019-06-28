@@ -9,22 +9,20 @@ namespace KeyotBotCoreApp.Context.Entities
     {
         [Key]
         [Column("candidate_id")]
-        public int CandidateId { get; set; }
+        public string CandidateId { get; set; }
         [Column("email")]
         public string Email { get; set; }
-        [Column("firstName")]
-        public string FirstName { get; set; }
-        [Column("lastName")]
-        public string LastName { get; set; }
+        [Column("name")]
+        public string Name { get; set; }
         [Column("futureMeetTime")]
         public string FutureMeetTime { get; set; }
         [Column("interested")]
         public string Interested { get; set; }
         [Column("phone")]
-        public int Phone { get; set; }
-        [Column("prefferredMethodContact")]
+        public string Phone { get; set; }
+        [Column("preferredMethodContact")]
         public string PreferredContactMethod { get; set; }
         [Column("roles")]
-        public int Roles { get; set; }
+        public string Roles { get; set; }
     }
 }
